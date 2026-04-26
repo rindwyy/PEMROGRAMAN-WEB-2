@@ -7,6 +7,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Services\ProductService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate; // Import Gate untuk mengecek hak akses
 
 class ProductController extends Controller
 {
@@ -38,6 +39,13 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
+        // Cek dulu, apakah user yang request adalah Admin?
+        if (!Gate::allows('isAdmin')) {
+            return response()->json([
+                'message' => 'Akses ditolak. Hanya Admin yang bisa menambah produk.'
+            ], 403); // 403 artinya Forbidden (Dilarang)
+        }
+
         try {
             // Data sudah tervalidasi melalui StoreProductRequest
             $validatedData = $request->validated();
@@ -64,6 +72,13 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Cek dulu, apakah user yang request adalah Admin?
+        if (!Gate::allows('isAdmin')) {
+            return response()->json([
+                'message' => 'Akses ditolak. Hanya Admin yang bisa mengubah produk.'
+            ], 403);
+        }
+
         $product = Product::findOrFail($id);
         
         // Validasi sederhana (sebaiknya juga pakai Form Request, tapi ini disederhanakan)
@@ -86,6 +101,13 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
+        // Cek dulu, apakah user yang request adalah Admin?
+        if (!Gate::allows('isAdmin')) {
+            return response()->json([
+                'message' => 'Akses ditolak. Hanya Admin yang bisa menghapus produk.'
+            ], 403);
+        }
+
         $product = Product::findOrFail($id);
         $product->delete();
 
